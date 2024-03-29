@@ -52,11 +52,12 @@ class Ball():
         self.radius = radius
         self.speed_x = 5.1
         self.speed_y = -5.1
+        self.acceleration_y = 0
         self.speed_increment_counter = 0
     def draw(self, screen):
         pygame.draw.circle(screen, self.COLOR, (self.x, self.y), self.radius)
     def increment_speed(self):
-        if self.speed_x < 10 or self.speed_y < 10:
+        if self.speed_x < 10:
             if self.speed_increment_counter >= 100:
                 self.speed_increment_counter = 0
                 
@@ -64,12 +65,13 @@ class Ball():
                     self.speed_x -= 0.1
                 else:
                     self.speed_x += 0.1
-                
-                if self.speed_y < 0:
-                    self.speed_y -= 0.1
-                else:
-                    self.speed_y += 0.1
             else:
+                self.speed_increment_counter += 1
+        if self.speed_y < 3:
+            if self.speed_increment_counter >= 100:
+                self.speed_increment_counter = 0
+                self.acceleration_y += 0.1
+            elif self.speed_x >= 10:
                 self.speed_increment_counter += 1
     def reset(self, new_x, new_y):
         self.x = new_x
@@ -107,15 +109,15 @@ class Ball():
                     self.speed_y *= -1
                     blocks.pop(block_index)
     def handle_colision_with_paddle(self, paddle):
-        if self.y >= paddle.y and self.y < paddle.y + paddle.height:
+        if self.y + self.radius >= paddle.y and self.y < paddle.y + paddle.height:
             if self.x + self.radius*2 >= paddle.x and self.x <= paddle.x + paddle.width:
                 self.speed_x *= -1 
 
                 middle_y = paddle.y + paddle.height//2
                 difference_in_y = middle_y - self.y
-                reduction_factor = (paddle.height//2) / 10
-                speed_y = difference_in_y / reduction_factor
-                self.speed_y = -1 * speed_y             
+                reduction_factor = (paddle.height//2) / 2
+                speed_y = difference_in_y / reduction_factor + self.acceleration_y
+                self.speed_y = -1 * speed_y            
 
 
 # block
