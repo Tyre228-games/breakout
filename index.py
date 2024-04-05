@@ -26,6 +26,7 @@ class Paddle():
             self.x -= self.speed
         elif self.direction == "right" and self.x + self.width + self.speed < SCREEN_WIDTH:
             self.x += self.speed
+
     def increment_speed(self):
         if self.speed < 10:
             if self.increment_speed_counter >= 100:
@@ -37,6 +38,7 @@ class Paddle():
     def draw(self, screen):
         pygame.draw.rect(screen, self.COLOR, (self.x, self.y, self.width, self.height))
         self.increment_speed()
+
     def reset(self):
         self.x = self.original_x
         self.y = self.original_y
@@ -54,8 +56,10 @@ class Ball():
         self.speed_y = -5.1
         self.acceleration_y = 0
         self.speed_increment_counter = 0
+
     def draw(self, screen):
         pygame.draw.circle(screen, self.COLOR, (self.x, self.y), self.radius)
+
     def increment_speed(self):
         if self.speed_x < 10:
             if self.speed_increment_counter >= 100:
@@ -73,41 +77,54 @@ class Ball():
                 self.acceleration_y += 0.1
             elif self.speed_x >= 10:
                 self.speed_increment_counter += 1
+
     def reset(self, new_x, new_y):
         self.x = new_x
         self.y = new_y
         self.speed_x = 5.1
         self.speed_y = -5.1
+
     def move(self):
+        # update old x and y
+        self.old_x = self.x
+        self.old_y = self.y
+
+        # check for colision with borders
         if self.is_colision_with_side_borders():
             self.speed_x *= -1
         elif self.is_colision_with_top_border():
             self.speed_y *= -1
         
+        # move
         self.x += self.speed_x
         self.y += self.speed_y
         self.increment_speed()
+
     def is_colision_with_side_borders(self):
         if self.x <= 0 or self.x + self.radius*2 >= SCREEN_WIDTH:
             return True
         else:
             return False
+        
     def is_colision_with_top_border(self):
         if self.y <= 0:
             return True
         else:
             return False
+        
     def is_colision_with_bottom_border(self):
         if self.y >= SCREEN_HEIGHT:
             return True
         else:
             return False
+        
     def handle_colision_with_blocks(self, blocks):
         for block_index, block in enumerate(blocks):
             if self.x + self.radius*2 >= block.x and self.x <= block.x + block.width:
                 if self.y <= block.y + block.height and self.y + self.radius*2 >= block.y:
                     self.speed_y *= -1
                     blocks.pop(block_index)
+
     def handle_colision_with_paddle(self, paddle):
         if self.y + self.radius >= paddle.y and self.y < paddle.y + paddle.height:
             if self.x + self.radius*2 >= paddle.x and self.x <= paddle.x + paddle.width:
@@ -128,6 +145,7 @@ class Block():
         self.y = y
         self.width = width
         self.height = height
+
     def draw(self, screen):
         pygame.draw.rect(screen, self.COLOR, (self.x, self.y, self.width, self.height))
 
