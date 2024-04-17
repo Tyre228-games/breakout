@@ -2,6 +2,7 @@ import pygame
 import time
 
 pygame.init()
+pygame.joystick.init()
 
 # screen set up
 SCREEN_WIDTH, SCREEN_HEIGHT = 700, 500
@@ -54,7 +55,7 @@ class Ball():
         self.radius = radius
         self.speed_x = 5.1
         self.speed_y = -5.1
-        self.acceleration_y = 0
+        self.acceleration_x = 0
         self.speed_increment_counter = 0
 
     def draw(self, screen):
@@ -71,10 +72,10 @@ class Ball():
                     self.speed_x += 0.1
             else:
                 self.speed_increment_counter += 1
-        if self.speed_y < 3:
+        if self.speed_y < 10:
             if self.speed_increment_counter >= 100:
                 self.speed_increment_counter = 0
-                self.acceleration_y += 0.1
+                self.acceleration_x += 0.1
             elif self.speed_x >= 10:
                 self.speed_increment_counter += 1
 
@@ -101,7 +102,7 @@ class Ball():
         self.increment_speed()
 
     def is_colision_with_side_borders(self):
-        if self.x <= 0 or self.x + self.radius*2 >= SCREEN_WIDTH:
+        if self.x - self.radius <= 0 or self.x + self.radius >= SCREEN_WIDTH:
             return True
         else:
             return False
@@ -128,13 +129,13 @@ class Ball():
     def handle_colision_with_paddle(self, paddle):
         if self.y + self.radius >= paddle.y and self.y < paddle.y + paddle.height:
             if self.x + self.radius*2 >= paddle.x and self.x <= paddle.x + paddle.width:
-                self.speed_x *= -1 
+                self.speed_y *= -1 
 
-                middle_y = paddle.y + paddle.height//2
-                difference_in_y = middle_y - self.y
-                reduction_factor = (paddle.height//2) / 2
-                speed_y = difference_in_y / reduction_factor + self.acceleration_y
-                self.speed_y = -1 * speed_y            
+                middle_x = paddle.x + paddle.width//2
+                difference_in_x = middle_x - self.x / 2
+                reduction_factor = (paddle.width//2)
+                speed_x = difference_in_x / reduction_factor + self.acceleration_x
+                self.speed_x = -1 * speed_x            
 
 
 # block
@@ -158,6 +159,7 @@ clock = pygame.time.Clock()
 blocks = []
 attempts = 5
 reseted_before = False
+joysticks = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]
 
 for row_index in range(5):
     for cell_index in range(SCREEN_WIDTH//100):
@@ -184,6 +186,15 @@ while running:
                 paddle.direction = "right"
         if event.type == pygame.KEYUP:
             paddle.direction = None
+        
+        if event.type == pygame.JOYAXISMOTION:
+            if joysticks[0].get_axis(0) > 0.4:
+                paddle.direction = "right"
+            elif joysticks[0].get_axis(0) < -0.4:
+                paddle.direction = "left"
+            else:
+                paddle.direction = None
+
     
 
     paddle.move()
